@@ -3,9 +3,11 @@ html {
   box-sizing: border-box;
   font-family: Monospaced, Helvetica, serif;
 }
-
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: inherit;
 }
+/*# sourceMappingURL=styles.css.map */

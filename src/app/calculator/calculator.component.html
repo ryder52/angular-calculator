@@ -1,6 +1,10 @@
 <div class="calculator">
 
-    <p type="text" class="calculator-screen">{{ currentNumber }}</p>
+    <div type="text" class="calculator-screen">
+        <div id="display">
+            {{ curr }}
+        </div>
+    </div>
 
     <div class="calculator-keys">
 
@@ -27,6 +31,6 @@
         <button type="button" (click) = "getDecimal()" class="decimal" value=".">.</button>
         <button type="button" (click) = "clear()"  class="all-clear" value="all-clear">AC</button>
 
-        <button type="button" (click) = "getOperation('=')" class="equal-sign" value="=">=</button>
+        <button type="button" (click) = "calculate()" class="equal-sign" value="=">=</button>
     </div>
 </div>

@@ -2,7 +2,7 @@
 
 This app was built with angular to learn angular and PWA.
 
-HTML and CSS files are from https://www.techiediaries.com/angular-9-tutorial-and-example/
+HTML and CSS files are from https://www.techiediaries.com/angular-9-tutorial-and-example/ and slightly changed.
 
 ## Run on local server
 

@@ -1,112 +1,45 @@
-import {Component, HostListener, OnInit} from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Store, select } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { number, symbol, reset } from './calculator.actions';
 
 @Component({
   selector: 'app-calculator',
   templateUrl: './calculator.component.html',
   styleUrls: ['./calculator.component.less']
 })
-export class CalculatorComponent implements OnInit {
+export class CalculatorComponent implements OnInit, OnDestroy {
 
-  curr = '0';
-  expr = [];
-  ord  = ['*', '/', '+', '-'];
-  last = 'operator';
+  expression$: Observable<({type: string, value: string})[]>;
+  displaySubscriber = null;
+  display = '';
   lmt  = 0;
+
+  constructor(private store: Store<{ expression: {type: string, value: string}[] }>) {
+    this.expression$ = store.pipe(select('expression'));
+    this.displaySubscriber = this.expression$.subscribe(
+      expression => {this.display = expression.map(o => o.value).join(''); console.log(expression); }
+    );
+  }
 
   ngOnInit() {
     this.limitDisplay();
   }
 
-  public getNumber(v: string) {
-    if (this.curr.length === this.lmt) {
-        return;
-    }
-    if (this.last === 'equals') {
-      this.clear();
-    }
-    if (this.last === 'decimal' || this.last === 'minus') {
-      this.expr[this.expr.length - 1].value += v;
-    } else if (this.last === 'operand') {
-      this.expr[this.expr.length - 1].value += v;
-    } else {
-      this.expr.push({type: 'operand', value: v});
-    }
-    this.last = 'operand';
-    this.curr === '0' ? this.curr = v : this.curr += v;
+  ngOnDestroy(): void {
+    this.displaySubscriber.unsubscribe();
   }
 
-  public getDecimal() {
-    if (this.curr.length === this.lmt - 1) {
-      return;
-    }
-    if (this.last === 'equals') {
-      this.clear();
-    }
-    if (this.expr.length === 0 && this.last === 'operator') {
-      this.expr.push({type: 'operand', value: '0.'});
-      this.last = 'decimal';
-      this.curr += this.curr === '0' ? '.' : '0.';
-    } else if (this.last === 'operand' && !this.expr[this.expr.length - 1].value.includes('.')) {
-      this.expr[this.expr.length - 1].value += '.';
-      this.last = 'decimal';
-      this.curr += '.';
-    }
+  number(operand) {
+    this.store.dispatch(number({ operand }));
   }
 
-  public getOperation(op: string) {
-    if (this.curr.length >= this.lmt - 1) {
-      return;
-    }
-    if (this.expr.length === 0 && op === '-' && this.last === 'operator') {
-      this.expr.push({type: 'operand', value: op});
-      this.last = 'minus';
-      this.curr = '-';
-    } else if (op === '-' && this.last === 'operator' && !this.expr[this.expr.length - 1].value.includes('-')) {
-      this.expr.push({type: 'operand', value: op});
-      this.last = 'minus';
-      this.curr += '-';
-    } else if (this.last === 'operand' || this.last === 'equals') {
-      this.expr.push({type: 'operator', value: op});
-      this.last = 'operator';
-      this.curr += op;
-    }
+  symbol(operator) {
+    this.store.dispatch(symbol({ operator }));
   }
 
-  public clear() {
-    this.curr = '0';
-    this.expr = [];
-    this.last = 'operator';
-  }
-
-  public calculate() {
-    let counter = 0;
-    const limit = 100;
-    while (this.expr.length > 1 && counter < limit) {
-      this.ord.forEach((operator) => {
-        this.expr.forEach((symbol, index) => {
-          if (symbol.type === 'operator' && symbol.value === operator) {
-            switch (symbol.value) {
-              case '+':
-                this.expr[index - 1].value = +this.expr[index - 1].value + +this.expr[index + 1].value;
-                break;
-              case '-':
-                this.expr[index - 1].value = +this.expr[index - 1].value - +this.expr[index + 1].value;
-                break;
-              case '*':
-                this.expr[index - 1].value = +this.expr[index - 1].value * +this.expr[index + 1].value;
-                break;
-              case '/':
-                this.expr[index - 1].value = +this.expr[index - 1].value / +this.expr[index + 1].value;
-                break;
-            }
-            this.expr.splice(index, 2);
-          }
-        });
-      });
-      counter++;
-    }
-    this.curr = this.expr[0].value.toString().length > this.lmt ? this.expr[0].value.toPrecision(this.lmt) : this.expr[0].value;
-    this.last = 'equals';
+  reset() {
+    this.store.dispatch(reset());
   }
 
   @HostListener('window:resize') limitDisplay() {
